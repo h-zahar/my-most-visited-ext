@@ -44,7 +44,11 @@ const showWeb = () => {
 
       console.log("unqWebsites:", unqWebsites);
 
-      chrome.storage.local.set({ unqWebsites: unqWebsites });
+      unqWebsites.sort((a, b) => {
+        return b.visitCount - a.visitCount;
+      });
+
+      chrome.storage.local.set({ unqWebsites });
 
       // chrome storage local set
       chrome.storage.local.set({ websites }, function () {
@@ -68,9 +72,11 @@ const showWeb = () => {
           var li = document.createElement("li");
           var p = document.createElement("p");
           p.href = website.url;
-          p.innerHTML = `<a href=${website.url} title=${website.url}>${new URL(
-            website.url
-          ).hostname.replace("www.", "")}</a> (Visits: ${website.visitCount})`;
+          p.innerHTML = `<a href=${website.url} title=${
+            data.state === "PAGE" ? website.url : ""
+          }>${new URL(website.url).hostname.replace("www.", "")}</a> (Visits: ${
+            website.visitCount
+          })`;
           li.appendChild(p);
 
           websitesList.appendChild(li);
