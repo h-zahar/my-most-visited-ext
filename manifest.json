@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "My Most Visited",
+  "description": "A live web show of your most visited sites :3",
+  "version": "1.0.0",
+  "permissions": ["history", "storage", "alarms", "nativeMessaging"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "My Most Visited",
+    "default_popup": "popup.html"
+  }
+}
