@@ -32,28 +32,38 @@ chrome.alarms.create("refresh", {
 });
 chrome.alarms.onAlarm.addListener(function (alarm) {
   if (alarm.name === "refresh") {
-    chrome.history.search({ text: "", maxResults: 10000 }, function (data) {
-      console.log(data);
-      var websites = data.map(function (item) {
-        return { url: item.url, visitCount: item.visitCount };
-      });
-      websites.sort(function (a, b) {
-        return b.visitCount - a.visitCount;
-      });
-      // chrome storage local set
-      chrome.storage.local.set({ websites }, function () {
-        console.log(websites.slice(0, 10));
-        chrome.runtime.onMessage.addListener(function (
-          request,
-          sender,
-          sendResponse
-        ) {
-          if (request.message == "popup_to_background") {
-            console.log(request.message);
-            sendResponse({ showHistory: showHistory() });
-          }
+    var oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+    chrome.history.search(
+      {
+        text: "",
+        maxResults: 10000,
+        startTime: oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1),
+      },
+      function (data) {
+        console.log(data);
+        var websites = data.map(function (item) {
+          return { url: item.url, visitCount: item.visitCount };
         });
-      });
-    });
+        websites.sort(function (a, b) {
+          return b.visitCount - a.visitCount;
+        });
+        // chrome storage local set
+        chrome.storage.local.set({ websites }, function () {
+          console.log(websites.slice(0, 10));
+          chrome.runtime.onMessage.addListener(function (
+            request,
+            sender,
+            sendResponse
+          ) {
+            if (request.message == "popup_to_background") {
+              console.log(request.message);
+              sendResponse({ showHistory: showHistory() });
+            }
+          });
+        });
+      }
+    );
   }
 });
