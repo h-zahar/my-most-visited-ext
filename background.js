@@ -1,9 +1,17 @@
 const showHistory = () => {
-  console.log(request.message);
   var websitesList = document.getElementById("websitesList");
   websitesList.innerHTML = "";
-  // get websites from storage sync
-  chrome.storage.sync.get(["websites"], function (data) {
+  // get websites from storage local
+  let w = [];
+  chrome.storage.local.get(["state"], function (data) {
+    if (data.state === "SITE") {
+      w = "websites";
+    } else {
+      w = "unqWebsites";
+    }
+  });
+
+  chrome.storage.local.get([w], function (data) {
     data.websites.forEach(function (website) {
       var li = document.createElement("li");
       var p = document.createElement("p");
@@ -32,8 +40,8 @@ chrome.alarms.onAlarm.addListener(function (alarm) {
       websites.sort(function (a, b) {
         return b.visitCount - a.visitCount;
       });
-      // chrome storage sync set
-      chrome.storage.sync.set({ websites: websites.slice(0, 15) }, function () {
+      // chrome storage local set
+      chrome.storage.local.set({ websites }, function () {
         console.log(websites.slice(0, 10));
         chrome.runtime.onMessage.addListener(function (
           request,
@@ -42,31 +50,7 @@ chrome.alarms.onAlarm.addListener(function (alarm) {
         ) {
           if (request.message == "popup_to_background") {
             console.log(request.message);
-            var websitesList = document.getElementById("websitesList");
-            websitesList.innerHTML = "";
-            // get websites from storage sync
-            chrome.storage.sync.get(["websites"], function (data) {
-              data.websites.forEach(function (website) {
-                var li = document.createElement("li");
-                var p = document.createElement("p");
-                p.href = website.url;
-                p.innerHTML = `<a href=${website.url} title=${
-                  website.url
-                }>${new URL(website.url).hostname.replace(
-                  "www.",
-                  ""
-                )}</a> (Visits: ${website.visitCount})`;
-                li.appendChild(p);
-
-                websitesList.appendChild(li);
-              });
-              sendResponse({ showHistory: showHistory() });
-            });
-            sendResponse({
-              showHistory: (() => {
-                console.log("recieved");
-              })(),
-            });
+            sendResponse({ showHistory: showHistory() });
           }
         });
       });
